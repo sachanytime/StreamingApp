@@ -1,0 +1,12 @@
+image: { registry: 852373397151.dkr.ecr.ap-south-1.amazonaws.com, tag: latest, pullPolicy: IfNotPresent }
+mongo: { enabled: true, image: mongo:6, storage: 5Gi }
+services:
+  auth:      { port: 3001, replicas: 2 }
+  streaming: { port: 3002, replicas: 2 }
+  admin:     { port: 3003, replicas: 1 }
+  chat:      { port: 3004, replicas: 1 }
+frontend: { port: 80, replicas: 2 }
+autoscaling: { enabled: true, minReplicas: 2, maxReplicas: 8, targetCPU: 70, targetMemory: 80 }
+ingress: { enabled: true, host: streamingapp.blog4bharat.com, className: alb }
+serviceAccount: { name: streamingapp-sa }   # IRSA-bound
+config: { awsRegion: ap-south-1 }

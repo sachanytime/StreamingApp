@@ -1,0 +1,10 @@
+# Daily cluster backup (namespaces + PVs) to S3 via Velero.
+apiVersion: velero.io/v1
+kind: Schedule
+metadata: { name: streamingapp-daily, namespace: velero }
+spec:
+  schedule: "0 3 * * *"
+  template:
+    includedNamespaces: [streamingapp]
+    snapshotVolumes: true
+    ttl: 168h0m0s          # keep 7 days

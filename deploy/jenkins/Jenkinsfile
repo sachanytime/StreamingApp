@@ -1,0 +1,41 @@
+pipeline {
+  agent any
+  environment {
+    AWS_ACCOUNT_ID = '852373397151'; AWS_REGION = 'ap-south-1'
+    ECR = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+    IMAGE_TAG = "${env.GIT_COMMIT.take(7)}"
+  }
+  options { timestamps(); disableConcurrentBuilds() }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('ECR Login') {
+      steps { withCredentials([[$class:'AmazonWebServicesCredentialsBinding', credentialsId:'aws-ecr-creds']]) {
+        sh 'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR'
+        sh 'bash deploy/ecr/create_repos.sh' } } }
+    stage('Build Images') { steps { sh 'bash deploy/ecr/build_and_push.sh $IMAGE_TAG' } }
+    stage('Security Scan (Trivy)') {
+      steps {
+        // NEW: fail the build on HIGH/CRITICAL image vulnerabilities before deploying.
+        sh '''
+          for s in auth streaming admin chat frontend; do
+            trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed \
+              $ECR/streamingapp-$s:$IMAGE_TAG || exit 1
+          done
+        '''
+      }
+    }
+    stage('Deploy to EKS (Helm)') {
+      when { branch 'main' }
+      steps { withCredentials([[$class:'AmazonWebServicesCredentialsBinding', credentialsId:'aws-ecr-creds']]) {
+        sh '''
+          aws eks update-kubeconfig --name streamingapp-eks --region $AWS_REGION
+          helm upgrade --install streamingapp deploy/helm/streamingapp \
+            --namespace streamingapp --create-namespace \
+            --set image.registry=$ECR --set image.tag=$IMAGE_TAG
+        ''' } } }
+  }
+  post {
+    success { sh 'aws sns publish --topic-arn arn:aws:sns:$AWS_REGION:$AWS_ACCOUNT_ID:streamingapp-deployments --subject "Build #${BUILD_NUMBER} SUCCESS" --message "Deployed ${IMAGE_TAG}" --region $AWS_REGION || true' }
+    failure { sh 'aws sns publish --topic-arn arn:aws:sns:$AWS_REGION:$AWS_ACCOUNT_ID:streamingapp-deployments --subject "Build #${BUILD_NUMBER} FAILED" --message "Failed at ${STAGE_NAME}" --region $AWS_REGION || true' }
+  }
+}

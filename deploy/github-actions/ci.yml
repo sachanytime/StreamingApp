@@ -1,0 +1,21 @@
+name: StreamingApp CI
+on: { push: { branches: [main] } }
+env: { AWS_REGION: ap-south-1, ECR: 852373397151.dkr.ecr.ap-south-1.amazonaws.com }
+jobs:
+  build-scan-push:
+    runs-on: ubuntu-latest
+    permissions: { id-token: write, contents: read }   # OIDC to AWS (no static keys)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with: { role-to-assume: arn:aws:iam::852373397151:role/gh-actions-ecr, aws-region: ap-south-1 }
+      - uses: aws-actions/amazon-ecr-login@v2
+      - name: Build, scan (Trivy), push
+        run: |
+          TAG=${GITHUB_SHA::7}
+          for s in auth streaming admin chat frontend; do
+            docker build -t $ECR/streamingapp-$s:$TAG -f backend/${s}Service/Dockerfile backend 2>/dev/null || \
+            docker build -t $ECR/streamingapp-$s:$TAG frontend
+            trivy image --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed $ECR/streamingapp-$s:$TAG
+            docker push $ECR/streamingapp-$s:$TAG
+          done

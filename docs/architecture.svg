@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 620" font-family="Segoe UI,Arial,sans-serif">
+<rect width="1040" height="620" fill="#f7f9fc"/>
+<text x="520" y="32" text-anchor="middle" font-size="21" font-weight="700" fill="#1f3b57">StreamingApp — Enhanced Orchestration &amp; Scaling</text>
+<rect x="28" y="66" width="150" height="52" rx="8" fill="#24292f"/><text x="103" y="90" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">GitHub (fork)</text><text x="103" y="107" text-anchor="middle" fill="#c9d1d9" font-size="10.5">webhook</text>
+<rect x="210" y="66" width="170" height="52" rx="8" fill="#fff" stroke="#d33833"/><text x="295" y="88" text-anchor="middle" fill="#d33833" font-size="13" font-weight="700">Jenkins CI</text><text x="295" y="106" text-anchor="middle" fill="#667" font-size="10.5">build · Trivy scan · push</text>
+<rect x="210" y="132" width="170" height="42" rx="8" fill="#fff" stroke="#ff9900"/><text x="295" y="158" text-anchor="middle" fill="#e07b00" font-size="12" font-weight="700">Amazon ECR (scan+KMS)</text>
+<rect x="410" y="66" width="150" height="52" rx="8" fill="#fff" stroke="#ef7b4d"/><text x="485" y="88" text-anchor="middle" fill="#d35400" font-size="13" font-weight="700">ArgoCD</text><text x="485" y="106" text-anchor="middle" fill="#667" font-size="10.5">GitOps sync · self-heal</text>
+<rect x="590" y="60" width="424" height="410" rx="10" fill="#eef4fb" stroke="#4a90d9"/><text x="802" y="84" text-anchor="middle" fill="#2b6cb0" font-size="14" font-weight="700">Amazon EKS (IRSA · managed+spot nodes)</text>
+<rect x="612" y="98" width="380" height="36" rx="6" fill="#fff" stroke="#ff9900"/><text x="802" y="121" text-anchor="middle" fill="#e07b00" font-size="12" font-weight="700">ALB Ingress — streamingapp.blog4bharat.com</text>
+<rect x="612" y="146" width="380" height="34" rx="6" fill="#fff" stroke="#4fd1c5"/><text x="802" y="168" text-anchor="middle" fill="#2c7a7b" font-size="11.5" font-weight="700">frontend (canary rollout 20→50→100%)</text>
+<g font-size="10.5" font-weight="700" fill="#3730a3">
+<rect x="612" y="192" width="90" height="46" rx="6" fill="#fff" stroke="#8b5cf6"/><text x="657" y="212" text-anchor="middle">auth</text><text x="657" y="228" text-anchor="middle" font-size="9" fill="#667" font-weight="400">:3001 +HPA</text>
+<rect x="710" y="192" width="90" height="46" rx="6" fill="#fff" stroke="#8b5cf6"/><text x="755" y="212" text-anchor="middle">streaming</text><text x="755" y="228" text-anchor="middle" font-size="9" fill="#667" font-weight="400">:3002 +HPA</text>
+<rect x="808" y="192" width="86" height="46" rx="6" fill="#fff" stroke="#8b5cf6"/><text x="851" y="212" text-anchor="middle">admin</text><text x="851" y="228" text-anchor="middle" font-size="9" fill="#667" font-weight="400">:3003</text>
+<rect x="900" y="192" width="86" height="46" rx="6" fill="#fff" stroke="#8b5cf6"/><text x="943" y="212" text-anchor="middle">chat</text><text x="943" y="228" text-anchor="middle" font-size="9" fill="#667" font-weight="400">:3004</text>
+</g>
+<text x="802" y="258" text-anchor="middle" font-size="10" fill="#667">HPA (2–8) + PodDisruptionBudget · Cluster Autoscaler (nodes 2–6 + spot)</text>
+<rect x="710" y="270" width="180" height="34" rx="6" fill="#fff" stroke="#10b981"/><text x="800" y="292" text-anchor="middle" fill="#047857" font-size="11.5" font-weight="700">MongoDB · PVC</text>
+<rect x="612" y="316" width="185" height="26" rx="5" fill="#fff" stroke="#611f69"/><text x="704" y="333" text-anchor="middle" fill="#611f69" font-size="10.5" font-weight="700">External Secrets ← Secrets Mgr</text>
+<rect x="805" y="316" width="185" height="26" rx="5" fill="#fff" stroke="#334155"/><text x="897" y="333" text-anchor="middle" fill="#334155" font-size="10.5" font-weight="700">NetworkPolicies · PodSecurity</text>
+<rect x="612" y="350" width="185" height="26" rx="5" fill="#fff" stroke="#d97706"/><text x="704" y="367" text-anchor="middle" fill="#b45309" font-size="10.5" font-weight="700">Prometheus + Grafana</text>
+<rect x="805" y="350" width="185" height="26" rx="5" fill="#fff" stroke="#d97706"/><text x="897" y="367" text-anchor="middle" fill="#b45309" font-size="10.5" font-weight="700">CloudWatch Container Insights</text>
+<rect x="612" y="384" width="185" height="26" rx="5" fill="#fff" stroke="#2563eb"/><text x="704" y="401" text-anchor="middle" fill="#1e40af" font-size="10.5" font-weight="700">Velero → S3 (daily backup)</text>
+<rect x="805" y="384" width="185" height="26" rx="5" fill="#fff" stroke="#611f69"/><text x="897" y="401" text-anchor="middle" fill="#611f69" font-size="10.5" font-weight="700">SNS → Slack (ChatOps)</text>
+<rect x="612" y="418" width="378" height="26" rx="5" fill="#fff" stroke="#0e7490"/><text x="801" y="435" text-anchor="middle" fill="#0e7490" font-size="10.5" font-weight="700">k6 load test → drives HPA / Cluster Autoscaler</text>
+<g stroke="#94a3b8" stroke-width="2" fill="none" marker-end="url(#a)">
+<path d="M178 92 H208"/><path d="M295 118 V130"/><path d="M380 92 H408"/><path d="M560 92 H588"/></g>
+<defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+</svg>

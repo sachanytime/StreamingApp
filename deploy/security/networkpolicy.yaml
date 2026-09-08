@@ -1,0 +1,24 @@
+# Default-deny + explicit allows: frontend -> backends, backends -> mongo.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: default-deny-ingress, namespace: streamingapp }
+spec: { podSelector: {}, policyTypes: [Ingress] }
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-frontend-to-backend, namespace: streamingapp }
+spec:
+  podSelector: { matchLabels: { tier: backend } }
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { app: frontend } } }]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata: { name: allow-backend-to-mongo, namespace: streamingapp }
+spec:
+  podSelector: { matchLabels: { app: mongo } }
+  policyTypes: [Ingress]
+  ingress:
+    - from: [{ podSelector: { matchLabels: { tier: backend } } }]
+      ports: [{ protocol: TCP, port: 27017 }]

@@ -1,0 +1,7 @@
+# Values for the kube-prometheus-stack Helm chart (Prometheus + Grafana + Alertmanager).
+grafana: { adminPassword: "changeme", defaultDashboardsEnabled: true }
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    serviceMonitorSelectorNilUsesHelmValues: false
+alertmanager: { enabled: true }

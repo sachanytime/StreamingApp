@@ -1,0 +1,23 @@
+# Progressive delivery: canary rollout for the frontend (Argo Rollouts).
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata: { name: frontend, namespace: streamingapp }
+spec:
+  replicas: 4
+  selector: { matchLabels: { app: frontend } }
+  template:
+    metadata: { labels: { app: frontend } }
+    spec:
+      containers:
+        - name: frontend
+          image: 852373397151.dkr.ecr.ap-south-1.amazonaws.com/streamingapp-frontend:latest
+          ports: [{ containerPort: 80 }]
+  strategy:
+    canary:
+      steps:
+        - setWeight: 20
+        - pause: { duration: 2m }
+        - setWeight: 50
+        - pause: { duration: 5m }
+        - setWeight: 100
+      trafficRouting: { alb: { ingress: streamingapp-ingress, servicePort: 80 } }

@@ -1,0 +1,31 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata: { name: streamingapp-eks, region: ap-south-1, version: "1.30" }
+iam:
+  withOIDC: true                       # enables IRSA (IAM Roles for Service Accounts)
+  serviceAccounts:
+    - metadata: { name: aws-load-balancer-controller, namespace: kube-system }
+      wellKnownPolicies: { awsLoadBalancerController: true }
+    - metadata: { name: cluster-autoscaler, namespace: kube-system }
+      wellKnownPolicies: { autoScaler: true }
+    - metadata: { name: external-secrets, namespace: external-secrets }
+      attachPolicyARNs: ["arn:aws:iam::aws:policy/SecretsManagerReadWrite"]
+managedNodeGroups:
+  - name: streamingapp-workers
+    instanceType: t3.medium
+    desiredCapacity: 2
+    minSize: 2
+    maxSize: 6                          # Cluster Autoscaler scales within this range
+    volumeSize: 20
+    tags: { "k8s.io/cluster-autoscaler/enabled": "true", "k8s.io/cluster-autoscaler/streamingapp-eks": "owned" }
+  - name: streamingapp-spot             # NEW: cost-optimized spot pool
+    instanceTypes: ["t3.medium","t3a.medium"]
+    spot: true
+    desiredCapacity: 1
+    minSize: 0
+    maxSize: 4
+cloudWatch: { clusterLogging: { enableTypes: ["api","audit","authenticator","controllerManager","scheduler"] } }
+addons:
+  - { name: aws-ebs-csi-driver }
+  - { name: amazon-cloudwatch-observability }   # Container Insights
+  - { name: vpc-cni }

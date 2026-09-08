@@ -1,0 +1,15 @@
+# Continuous Deployment via GitOps: ArgoCD watches the repo and keeps EKS in sync with Git.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata: { name: streamingapp, namespace: argocd }
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/sdt11-a/StreamingApp.git
+    targetRevision: main
+    path: deploy/helm/streamingapp
+    helm: { valueFiles: [values.yaml] }
+  destination: { server: https://kubernetes.default.svc, namespace: streamingapp }
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions: [CreateNamespace=true]

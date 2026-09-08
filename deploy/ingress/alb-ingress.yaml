@@ -1,0 +1,23 @@
+# Requires the AWS Load Balancer Controller (installed via Helm; IRSA-bound SA from cluster.yaml).
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: streamingapp-ingress
+  namespace: streamingapp
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-path: /health
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-south-1:852373397151:certificate/xxxx
+spec:
+  rules:
+    - host: streamingapp.blog4bharat.com
+      http:
+        paths:
+          - { path: /api/auth,   pathType: Prefix, backend: { service: { name: auth,      port: { number: 3001 } } } }
+          - { path: /api/stream, pathType: Prefix, backend: { service: { name: streaming, port: { number: 3002 } } } }
+          - { path: /api/admin,  pathType: Prefix, backend: { service: { name: admin,     port: { number: 3003 } } } }
+          - { path: /api/chat,   pathType: Prefix, backend: { service: { name: chat,      port: { number: 3004 } } } }
+          - { path: /,           pathType: Prefix, backend: { service: { name: frontend,  port: { number: 80 } } } }

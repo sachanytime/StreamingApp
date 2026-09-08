@@ -1,0 +1,44 @@
+{{- range $name, $svc := .Values.services }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: {{ $name }}, labels: { app: {{ $name }}, tier: backend } }
+spec:
+  replicas: {{ $svc.replicas }}
+  selector: { matchLabels: { app: {{ $name }} } }
+  template:
+    metadata: { labels: { app: {{ $name }}, tier: backend } }
+    spec:
+      serviceAccountName: {{ $.Values.serviceAccount.name }}
+      containers:
+        - name: {{ $name }}
+          image: "{{ $.Values.image.registry }}/streamingapp-{{ $name }}:{{ $.Values.image.tag }}"
+          ports: [{ containerPort: {{ $svc.port }} }]
+          envFrom: [{ secretRef: { name: streamingapp-secrets } }]
+          resources: { requests: { cpu: 100m, memory: 128Mi }, limits: { cpu: 500m, memory: 512Mi } }
+          livenessProbe:  { httpGet: { path: /health, port: {{ $svc.port }} }, initialDelaySeconds: 15 }
+          readinessProbe: { httpGet: { path: /health, port: {{ $svc.port }} }, initialDelaySeconds: 5 }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: {{ $name }} }
+spec: { type: ClusterIP, selector: { app: {{ $name }} }, ports: [{ port: {{ $svc.port }}, targetPort: {{ $svc.port }} }] }
+{{- if $.Values.autoscaling.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata: { name: {{ $name }}-hpa }
+spec:
+  scaleTargetRef: { apiVersion: apps/v1, kind: Deployment, name: {{ $name }} }
+  minReplicas: {{ $.Values.autoscaling.minReplicas }}
+  maxReplicas: {{ $.Values.autoscaling.maxReplicas }}
+  metrics:
+    - { type: Resource, resource: { name: cpu, target: { type: Utilization, averageUtilization: {{ $.Values.autoscaling.targetCPU }} } } }
+    - { type: Resource, resource: { name: memory, target: { type: Utilization, averageUtilization: {{ $.Values.autoscaling.targetMemory }} } } }
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata: { name: {{ $name }}-pdb }
+spec: { minAvailable: 1, selector: { matchLabels: { app: {{ $name }} } } }
+{{- end }}
+{{- end }}
